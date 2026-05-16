@@ -174,6 +174,42 @@ ReaderRolling.addToMainMenu = function(self, menu_items)
             end)
         end,
     }
+    menu_items.vertical_reading = {
+        sorting_hint = "typeset",
+        text = "Vertical reading",
+        sub_item_table = {
+            {
+                text = "On",
+                radio = true,
+                checked_func = function()
+                    return self.ui.doc_settings:isTrue("vertical_reading_hack")
+                end,
+                callback = function()
+                    if not self.ui.doc_settings:isTrue("vertical_reading_hack") then
+                        self.ui.doc_settings:saveSetting("vertical_reading_hack", true)
+                        UIManager:nextTick(function()
+                            self.ui:reloadDocument()
+                        end)
+                    end
+                end,
+            },
+            {
+                text = "Off",
+                radio = true,
+                checked_func = function()
+                    return not self.ui.doc_settings:isTrue("vertical_reading_hack")
+                end,
+                callback = function()
+                    if self.ui.doc_settings:isTrue("vertical_reading_hack") then
+                        self.ui.doc_settings:saveSetting("vertical_reading_hack", false)
+                        UIManager:nextTick(function()
+                            self.ui:reloadDocument()
+                        end)
+                    end
+                end,
+            },
+        },
+    }
     menu_items.toggle_dictionary_lookup =  {
         sorting_hint = "typeset",
         text = _("Dictionary on single word selection"),
@@ -452,6 +488,24 @@ Dispatcher:registerAction("toggle_vertical_read", {category="none", event="Toggl
 
 function onToggleVerticalRead()
     ReaderRolling:onToggleVerticalRead()
+end
+
+Dispatcher:registerAction("set_vertical_read", {
+    category = "string",
+    event = "SetVerticalRead",
+    title = "Set Vertical Read",
+    rolling = true,
+    args = {true, false},
+    toggle = {"on", "off"},
+})
+
+ReaderRolling.onSetVerticalRead = function(self, value)
+    if self.ui.doc_settings:isTrue("vertical_reading_hack") ~= value then
+        self.ui.doc_settings:saveSetting("vertical_reading_hack", value)
+        UIManager:nextTick(function()
+            self.ui:reloadDocument()
+        end)
+    end
 end
 
 ReaderRolling.onToggleDictionaryLookup = function(self)
